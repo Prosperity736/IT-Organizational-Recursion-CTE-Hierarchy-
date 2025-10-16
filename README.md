@@ -1,2 +1,72 @@
 # IT-Organizational-Recursion-CTE-Hierarchy-
 Using Recursion CTE For IT Organizational Hierarchy  Who is  you manager?
+
+
+```SQL
+CREATE TABLE Employee (
+    ID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Position VARCHAR(100),
+    Department VARCHAR(50),
+    Supervisor INT
+);
+
+-- Step 2: Insert your data
+INSERT INTO Employee (ID, Name, Position, Department, Supervisor) VALUES
+(1, 'Heinz Griesser', 'IT Director', 'IT', 0),
+(2, 'Andreas Sitter', 'IT Security Manager', 'IT', 1),
+(3, 'Thomas Bergmann', 'IT Innovation Manager', 'IT', 1),
+(4, 'Hannes Berg', 'IT Operation Manager', 'IT', 1),
+(5, 'Anna Kruggel', 'Administrator', 'IT', 4),
+(6, 'Karin Pacher', 'Developer', 'IT', 4),
+(7, 'Patrick Wurzer', 'IT Service Manager', 'IT', 1),
+(8, 'Micheal Maier', 'Administrator', 'IT', 7),
+(9, 'David Fanzott', 'Developer', 'IT', 4),
+(10, 'Andrea Sternig', 'IT Architecture Manager', 'IT', 1),
+(11, 'Dominik Kainzner', 'Portfolio Engineer', 'IT', 10),
+(12, 'Luca Egarter', 'Requirement Engineer', 'IT', 10),
+(13, 'Hannes Maier', 'Developer', 'IT', 3),
+(14, 'Thomas Steiner', 'Administrator', 'IT', 3),
+(15, 'Andrea Huber', 'Requirement Engineer', 'IT', 10),
+(16, 'Jasmin Mentil', 'Developer', 'IT', 4),
+(17, 'Peter Schuller', 'Service Support Engineer', 'IT', 7),
+(18, 'Chris Feierabend', 'Service Support Engineer', 'IT', 7);
+
+
+
+WITH EmployeeHierarchy AS (
+    -- Anchor (Top-level: Director)
+    SELECT 
+        ID,
+        Name,
+        Position,
+        Supervisor,
+        CAST(Name AS NVARCHAR(MAX)) AS HierarchyPath,
+        0 AS Level
+    FROM Employee
+    WHERE Supervisor = 0
+
+    UNION ALL
+
+    -- Recursive part
+    SELECT 
+        e.ID,
+        e.Name,
+        e.Position,
+        e.Supervisor,
+        CAST(eh.HierarchyPath + ' ------ ' + e.Name AS NVARCHAR(MAX)) AS HierarchyPath,
+        eh.Level + 1
+    FROM Employee e
+    INNER JOIN EmployeeHierarchy eh ON e.Supervisor = eh.ID
+)
+SELECT 
+    ID,
+    Name,
+    Position,
+    Supervisor,
+    HierarchyPath,
+    Level
+FROM EmployeeHierarchy
+ORDER BY HierarchyPath;
+
+
